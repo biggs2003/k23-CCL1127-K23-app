@@ -21,7 +21,8 @@ public class MeasurementMarkers : MonoBehaviour
         measureLine.startWidth = lineWidth;
         measureLine.endWidth = lineWidth;
         measureLine.useWorldSpace = true;
-        measureLine.material = new Material(Shader.Find("Sprites/Default")) { color = Color.white };
+        // Use the line's default material and tint it — avoids null shader in URP/HDRP projects
+        measureLine.material = new Material(measureLine.material) { color = Color.white };
         measureLine.enabled = false;
     }
 
