@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
 using TMPro;
 
 public class OverlayUI : MonoBehaviour
@@ -15,12 +14,22 @@ public class OverlayUI : MonoBehaviour
 
     void Update()
     {
-        bool limited = ARSession.state == ARSessionState.SessionTracking
-                    && ARSession.notTrackingReason != NotTrackingReason.None;
+        var state = ARSession.state;
+        bool showWarning = state != ARSessionState.SessionTracking
+                        && state != ARSessionState.None;
 
-        trackingWarningPanel.SetActive(limited);
-        if (limited)
-            trackingWarningText.text = ReasonText(ARSession.notTrackingReason);
+        trackingWarningPanel.SetActive(showWarning);
+        if (showWarning)
+            trackingWarningText.text = state switch
+            {
+                ARSessionState.Unsupported          => "AR not supported on this device",
+                ARSessionState.CheckingAvailability => "Checking AR availability…",
+                ARSessionState.NeedsInstall         => "AR services need to be installed",
+                ARSessionState.Installing           => "Installing AR services…",
+                ARSessionState.Ready                => "Initialising AR…",
+                ARSessionState.SessionInitializing  => "Starting AR session…",
+                _                                   => "AR tracking limited",
+            };
     }
 
     void UpdateInstruction(MeasurementSession.State state)
@@ -32,13 +41,4 @@ public class OverlayUI : MonoBehaviour
             _                                     => string.Empty,
         };
     }
-
-    static string ReasonText(NotTrackingReason reason) => reason switch
-    {
-        NotTrackingReason.Initializing         => "Initialising AR…",
-        NotTrackingReason.ExcessiveMotion      => "Slow down — too much motion",
-        NotTrackingReason.InsufficientFeatures => "Point at a textured surface",
-        NotTrackingReason.Relocalizing         => "Relocalising…",
-        _                                      => "Tracking limited",
-    };
 }
